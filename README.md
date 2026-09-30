@@ -5,6 +5,7 @@
 - 在线体验：<https://svher.github.io/forest-shelter/>
 - 分支：`source`（本分支）放源码；`main` 放构建产物 `index.html`，由 GitHub Pages 发布
 - 使用说明：[`docs/使用说明.md`](docs/使用说明.md)
+- 技术报告：[窗外森林渲染修复（2026-09-30）](docs/2026-09-30-exterior-forest-fix.md)
 
 ## 目录
 

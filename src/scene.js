@@ -33,6 +33,7 @@ const interactables = [];
 const trees = [];
 const flameUniforms = [];
 const atmosphereUniforms = [];
+const exteriorShadowLights = [];
 const embers = [];
 let renderer;
 let composer;
@@ -691,6 +692,29 @@ function lighting() {
   });
 }
 
+// The room's directional shadow maps hug the cabin so the skylight frame stays sharp, which clipped every tree
+// shadow a few metres short of its trunk and left the trees floating. The forest behind the glass (layer 1) is
+// lit by wide-frustum twins of those lights instead, so each shadow starts at the base of its own tree.
+function buildExteriorShadows() {
+  const forest = new THREE.Object3D();
+  forest.position.set(0, 0, -8);
+  scene.add(forest);
+  for (const light of [coolLight, morningWorld.sun]) {
+    light.layers.disable(1);
+    const twin = new THREE.DirectionalLight(light.color, light.intensity);
+    twin.layers.set(1);
+    twin.target = forest;
+    twin.position.subVectors(light.position, light.target.position).setLength(70).add(forest.position);
+    twin.castShadow = true;
+    twin.shadow.mapSize.setScalar(mobile ? 1024 : 2048);
+    Object.assign(twin.shadow.camera, { left: -36, right: 32, top: 36, bottom: -28, near: 20, far: 100 });
+    twin.shadow.bias = -0.0005;
+    twin.shadow.normalBias = 0.12;
+    scene.add(twin);
+    exteriorShadowLights.push({ light, twin });
+  }
+}
+
 const cameraPresets = {
   room: { position: [4.65, 3.05, 6.85], target: [-0.22, 2.42, -1.85], up: [0, 1, 0], fov: mobile ? 72 : 57 },
   // Lying on the back with the head on the pillows: eyes face the skylight, tipped 8° toward the feet,
@@ -1046,6 +1070,11 @@ function animate() {
     tree.group.rotation.z = Math.sin(time * 0.4 + tree.phase) * tree.weight * (0.5 + rainSystem.rain * 2.5) + rainSystem.wind * tree.weight * 2;
     tree.group.rotation.x = Math.sin(time * 0.27 + tree.phase) * tree.weight * (0.5 + rainSystem.rain);
   });
+  exteriorShadowLights.forEach(({ light, twin }) => {
+    twin.color.copy(light.color);
+    twin.intensity = light.intensity;
+    if (light.shadow.needsUpdate) twin.shadow.needsUpdate = true;
+  });
   rainSystem.renderCaptures(camera);
   composer.render();
   if (time > 0.4 && !document.querySelector('#loading').classList.contains('loaded')) {
@@ -1086,12 +1115,15 @@ function init() {
   buildAtmosphere();
   lighting();
   morningWorld = new MorningWorld({ scene, trees, mobile, roofHeight, reducedMotion });
+  buildExteriorShadows();
   scene.traverse(object => {
     if (object.isLight && object.shadow) {
       object.shadow.autoUpdate = false;
       object.shadow.needsUpdate = true;
     }
-    if (object.isMesh && object.material?.transparent) ambientOcclusionExcluded.push(object);
+    // The forest (layer 1) is only ever seen through the glass's own capture. SSAO's override material ignores the
+    // needles' alpha cutout, so left in it the trees become solid cards whose outlines get darkened onto the glass.
+    if (object.isMesh && (object.material?.transparent || object.layers.isEnabled(1))) ambientOcclusionExcluded.push(object);
   });
   renderer.shadowMap.autoUpdate = false;
   renderer.shadowMap.needsUpdate = true;

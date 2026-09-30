@@ -119,6 +119,7 @@ export class RainSystem {
     this.uniforms.background.value = this.refractionTarget.texture;
     this.backgroundCamera = new THREE.PerspectiveCamera();
     this.backgroundCamera.layers.set(1);
+    this.shadowCamera = new THREE.PerspectiveCamera();
     this.drawMaps(0.033);
     if (diagnostics) this.createDiagnostics();
   }
@@ -446,7 +447,13 @@ export class RainSystem {
     this.backgroundCamera.layers.set(1);
     this.backgroundCamera.updateMatrixWorld(true);
     this.renderer.setRenderTarget(this.refractionTarget);
-    if (this.renderer.shadowMap.needsUpdate) this.renderer.render(this.scene, camera);
+    if (this.renderer.shadowMap.needsUpdate) {
+      // Refresh every shadow map from a camera that sees both layers: the room's lights keep their casters, and the
+      // forest's own lights (layer 1 only) still get the cabin as a caster instead of just the trees.
+      this.shadowCamera.copy(camera);
+      this.shadowCamera.layers.enable(1);
+      this.renderer.render(this.scene, this.shadowCamera);
+    }
     const interiorFog = this.scene.fog;
     this.scene.fog = this.exteriorFog;
     try {
