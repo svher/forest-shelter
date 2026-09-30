@@ -1,0 +1,14 @@
+{
+  "name": "forest-shelter",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "node --check src/scene.js && node --check src/audio.js && node --check src/rain-system.js && node --check src/rain-shaders.js && node --check src/water-simulation.js && node --check src/daylight.js && node --check src/morning-world.js && node --check src/sunlight-pass.js"
+  },
+  "dependencies": {
+    "esbuild": "0.25.9",
+    "three": "0.180.0"
+  }
+}

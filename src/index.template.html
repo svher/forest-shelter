@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#171b1d">
+  <title>林间 Shelter · 雨夜木屋</title>
+  <style>/* APP_STYLES */</style>
+</head>
+<body>
+  <main id="shelter">
+    <canvas id="scene" aria-label="可拖动环顾的三维森林木屋卧室，床上方是雨滴滑落的倾斜天窗"></canvas>
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="loading" id="loading">
+      <span class="loading-tree" aria-hidden="true">♧</span>
+      <p>穿过森林，回到温暖。</p>
+      <span id="load-detail">正在点亮小屋</span>
+    </div>
+    <header class="topbar interface">
+      <a class="brand" href="#" aria-label="林间 Shelter 首页">
+        <svg viewBox="0 0 32 36" aria-hidden="true"><path d="M16 2 6 16h6L3 28h11v6h4v-6h11L20 16h6L16 2Z"/></svg>
+        <span>林间 <span class="brand-divider"></span><em>SHELTER</em></span>
+      </a>
+      <div class="top-actions">
+        <span class="live-label"><span></span> 一处属于你的避风港</span>
+        <button id="sound-toggle" class="top-button" type="button" aria-pressed="false" aria-label="开启环境音">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 4V5L7 9H3Zm13 0 5 6m0-6-5 6" id="sound-path"/></svg>
+          <span id="sound-label">开启声音</span>
+        </button>
+        <button id="panel-toggle" class="icon-button" type="button" aria-label="收起环境设置" aria-expanded="true" aria-controls="ambience-panel">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h8m4 0h4M4 17h3m4 0h9M12 4v6M7 14v6"/></svg>
+        </button>
+      </div>
+    </header>
+    <aside id="ambience-panel" class="ambience-panel interface" aria-label="环境设置">
+      <div class="panel-heading">
+        <span class="eyebrow">MAKE YOURSELF AT HOME</span>
+        <h2>让世界，慢一点。</h2>
+      </div>
+      <div class="control-section">
+        <div class="control-label"><label for="rain">窗外的雨</label><output id="rain-value" for="rain">绵绵中雨</output></div>
+        <input id="rain" aria-label="雨势大小" type="range" min="0" max="100" value="58">
+        <div class="range-ends"><span>静谧</span><span>倾盆</span></div>
+      </div>
+      <div class="control-section time-section">
+        <span class="control-label">天色</span>
+        <div class="segmented" role="group" aria-label="时间">
+          <button type="button" data-time="morning" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 14h16M4 17h12M6 11a4 4 0 0 1 8 0M10 2v2M3 5l2 2m12-2-2 2"/></svg>清晨</button>
+          <button type="button" data-time="night" aria-pressed="true"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M15.6 12.6A6.6 6.6 0 0 1 7.4 4.4a6.5 6.5 0 1 0 8.2 8.2Z"/></svg>深夜</button>
+        </div>
+      </div>
+      <div class="control-section light-section">
+        <label class="switch-row" for="lamp"><span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 3-3 9h14l-3-9H6Zm4 9v5m-4 0h8"/></svg>床头暖灯</span><input id="lamp" type="checkbox" role="switch" checked><i aria-hidden="true"></i></label>
+        <label class="switch-row" for="fire"><span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2c1 5 5 5 5 10a5 5 0 0 1-10 0c0-2 1-4 3-5 0 3 2 3 2-5Z"/></svg>壁炉的火</span><input id="fire" type="checkbox" role="switch" checked><i aria-hidden="true"></i></label>
+      </div>
+      <div class="control-section volume-section">
+        <div class="control-label"><label for="volume">环境音量</label><output id="volume-value" for="volume">55%</output></div>
+        <input id="volume" aria-label="环境音量" type="range" min="0" max="100" value="55">
+        <p class="audio-note" id="audio-note">戴上耳机，让雨声包围你</p>
+      </div>
+      <div class="panel-foot">
+        <span class="glass-symbol" aria-hidden="true">✧</span>
+        <p>轻点天窗，拭去一小片雾气<br>碰一碰茶杯，感受升起的暖意</p>
+      </div>
+    </aside>
+    <div class="scene-caption interface">
+      <div class="location-label"><span class="small-line"></span> FOREST CABIN · <span id="time-label">23:48</span></div>
+      <h1>今夜，只听雨。</h1>
+      <p>世界很大。这一刻，小屋刚刚好。</p>
+    </div>
+    <footer class="bottom-bar interface">
+      <div class="navigation-hint"><svg viewBox="0 0 20 24" aria-hidden="true"><rect x="4" y="2" width="12" height="19" rx="6"/><path d="M10 6v4"/></svg><span>拖动环顾 <span class="hint-dot">·</span> 滚轮靠近</span></div>
+      <div class="view-picker" role="group" aria-label="选择视角">
+        <button type="button" data-view="room" aria-pressed="true"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m3 8 7-5 7 5v9H3V8Zm5 9v-6h4v6"/></svg><span>环顾小屋</span></button>
+        <button type="button" data-view="bed" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5v12m14-7v7M3 14h14M3 10h14M5 7h4v3"/></svg><span>躺下听雨</span></button>
+        <button type="button" data-view="fire" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2c1 5 5 5 5 10a5 5 0 0 1-10 0c0-2 1-4 3-5 0 3 2 3 2-5Z"/></svg><span>炉边小憩</span></button>
+      </div>
+      <button id="immersive" class="immersive-button" type="button" aria-label="进入沉浸模式"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7V3h4m6 0h4v4M3 13v4h4m6 0h4v-4"/></svg><span>沉浸模式</span></button>
+    </footer>
+    <button id="exit-immersive" class="exit-immersive" type="button" hidden>退出沉浸 <span>Esc</span></button>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <div id="interaction-label" class="interaction-label" aria-hidden="true"></div>
+    <div id="fatal-error" class="fatal-error" role="alert" hidden><h2>小屋暂时未能点亮</h2><p id="fatal-message"></p><button type="button" onclick="location.reload()">重新进入</button></div>
+  </main>
+  <script>/* APP_SCRIPT */</script>
+</body>
+</html>
