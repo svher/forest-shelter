@@ -96,7 +96,6 @@ export class MorningWorld {
     }
     this.createMist();
     this.createMountains();
-    this.createLightShafts();
     this.createBirds();
     this.createRainbow();
     this.createMotes();
@@ -132,21 +131,6 @@ export class MorningWorld {
       const material = new THREE.MeshBasicMaterial({ color: ['#748f94', '#859da1', '#9caeb0'][ridge], transparent: true, opacity: 0, depthWrite: false, fog: false });
       this.mountains.push(material);
       mesh(geometry, material, [0, -1, -43 - ridge * 9], this.outside);
-    }
-  }
-
-  createLightShafts() {
-    this.shaftUniforms = { strength: { value: 0 }, time: { value: 0 } };
-    const material = new THREE.ShaderMaterial({
-      uniforms: this.shaftUniforms, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending,
-      vertexShader: 'varying vec2 coordinates;void main(){coordinates=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-      fragmentShader: `uniform float strength;uniform float time;varying vec2 coordinates;
-      void main(){float across=pow(sin(coordinates.x*3.14159),2.);float taper=pow(sin(coordinates.y*3.14159),.7);float haze=.8+.2*sin(coordinates.y*31.-time*.3);gl_FragColor=vec4(.97,.87,.61,across*taper*haze*strength*.055);}`
-    });
-    for (let ray = 0; ray < 4; ray++) {
-      const cone = mesh(new THREE.CylinderGeometry(0.15, 1.45, 15, 12, 1, true), material, [-8+ray*4,7,-14-ray*3], this.outside);
-      cone.rotation.z = -0.3;
-      cone.rotation.x = -0.32;
     }
   }
 
@@ -212,8 +196,6 @@ export class MorningWorld {
     const profile = morningProfile(rain);
     this.profile = profile;
     this.sun.intensity = morning * profile.sunlight * 5.4;
-    this.shaftUniforms.strength.value = morning * profile.sunlight;
-    this.shaftUniforms.time.value = time;
     this.fogUniforms.forEach(uniforms => {
       uniforms.time.value = time;
       uniforms.strength.value = morning * profile.mist;

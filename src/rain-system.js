@@ -117,6 +117,10 @@ export class RainSystem {
     this.uniforms.reflectionMap.value = this.reflector.getRenderTarget().texture;
     this.refractionTarget = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
     this.uniforms.background.value = this.refractionTarget.texture;
+    // While an exterior pass (the morning haze) still has to be layered over the forest, the forest is drawn here
+    // first so that pass can read its depth; its GPU storage is only allocated the first time that happens.
+    this.exteriorTarget = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, depthTexture: new THREE.DepthTexture(1, 1) });
+    this.exteriorPass = null;
     this.backgroundCamera = new THREE.PerspectiveCamera();
     this.backgroundCamera.layers.set(1);
     this.shadowCamera = new THREE.PerspectiveCamera();
@@ -424,6 +428,8 @@ export class RainSystem {
 
   resize(width, height) {
     this.refractionTarget.setSize(width, height);
+    this.exteriorTarget.setSize(width, height);
+    this.exteriorPass?.setSize(width, height);
     this.uniforms.resolution.value.set(width, height);
   }
 
@@ -446,7 +452,8 @@ export class RainSystem {
     this.backgroundCamera.copy(camera);
     this.backgroundCamera.layers.set(1);
     this.backgroundCamera.updateMatrixWorld(true);
-    this.renderer.setRenderTarget(this.refractionTarget);
+    const exteriorPass = this.exteriorPass?.enabled ? this.exteriorPass : null;
+    this.renderer.setRenderTarget(exteriorPass ? this.exteriorTarget : this.refractionTarget);
     if (this.renderer.shadowMap.needsUpdate) {
       // Refresh every shadow map from a camera that sees both layers: the room's lights keep their casters, and the
       // forest's own lights (layer 1 only) still get the cabin as a caster instead of just the trees.
@@ -461,6 +468,7 @@ export class RainSystem {
     } finally {
       this.scene.fog = interiorFog;
     }
+    exteriorPass?.render(this.renderer, this.exteriorTarget, this.refractionTarget, this.backgroundCamera);
     this.renderer.setRenderTarget(null);
     if (this.frameCount % (this.mobile ? 3 : 2) === 0) {
       this.reflector.onBeforeRender(this.renderer, this.scene, camera);

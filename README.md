@@ -16,7 +16,7 @@ src/
   rain-shaders.js     玻璃 / 雨丝 / 飞溅着色器
   water-simulation.js 玻璃上的水珠模拟
   morning-world.js    清晨天空、晨雾、山脊、鸟
-  sunlight-pass.js    室内体积光后处理
+  sunlight-pass.js    体积光：室内后处理与窗外树林光雾
   daylight.js         深夜 ↔ 清晨过渡
   audio.js            Web Audio 环境音
   index.template.html / style.css

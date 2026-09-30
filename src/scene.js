@@ -10,7 +10,7 @@ import { ForestAudio } from './audio.js';
 import { RainSystem } from './rain-system.js';
 import { DaylightTransition, morningProfile } from './daylight.js';
 import { MorningWorld, morningSkyFragment } from './morning-world.js';
-import { SunlightPass } from './sunlight-pass.js';
+import { SunlightPass, ForestSunlight } from './sunlight-pass.js';
 import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
 
 const canvas = document.querySelector('#scene');
@@ -929,6 +929,7 @@ function bindInteractions() {
 let bloom;
 let ssao;
 let sunlight;
+let forestSunlight;
 
 function resize() {
   const width = shelter.clientWidth;
@@ -1010,6 +1011,10 @@ function animate() {
   scene.fog.density = THREE.MathUtils.lerp(.012, .003, state.morning);
   rainSystem.exteriorFog.color.copy(scene.fog.color);
   rainSystem.exteriorFog.density = THREE.MathUtils.lerp(.012, dawn.visibility, state.morning);
+  forestSunlight.strength = sunlight.strength;
+  forestSunlight.time = time;
+  forestSunlight.fogDensity = rainSystem.exteriorFog.density;
+  forestSunlight.enabled = forestSunlight.strength > .002 && forestSunlight.ready;
   const lightMode = state.targetMorning ? 'morning' : 'night';
   lightPreferences[lightMode].lamp = state.lamp;
   lightPreferences[lightMode].fire = state.fire;
@@ -1116,6 +1121,10 @@ function init() {
   lighting();
   morningWorld = new MorningWorld({ scene, trees, mobile, roofHeight, reducedMotion });
   buildExteriorShadows();
+  forestSunlight = new ForestSunlight({
+    sun: exteriorShadowLights.find(({ light }) => light === morningWorld.sun).twin, steps: mobile ? 16 : 28
+  });
+  rainSystem.exteriorPass = forestSunlight;
   scene.traverse(object => {
     if (object.isLight && object.shadow) {
       object.shadow.autoUpdate = false;
